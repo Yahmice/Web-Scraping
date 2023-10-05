@@ -15,10 +15,12 @@ a class="serp-item__title" data-qa="serp-item__title" target="_blank" href="http
 
 
 
+import json
 import requests
 import bs4
 import fake_headers
 import time
+from pprint import pprint
 
 keywords = ['Django', 'Flask']
 
@@ -40,16 +42,28 @@ for aplication_tag in aplication_tags:
     a_tag = span_tag.find('a', class_ = 'serp-item__title')
     company_name_list_tags = aplication_tag.find('div', class_ = 'vacancy-serp-item__meta-info-company')
     company_name_tags = company_name_list_tags.find('a')
+    city_class_tag = aplication_tag.find('div', class_ = 'vacancy-serp-item-company')
+    city_tag = city_class_tag.find('div', class_ = 'vacancy-serp-item__info')
+    salary_tag = aplication_tag.find('span', {'data-qa': 'vacancy-serp__vacancy-compensation'})
 
-    link_relative = a_tag['href']
-    header = h3_tag.text
+
+    headers = h3_tag.text
+    link = a_tag['href']
     company_name = company_name_tags.text
+    city = city_tag.find('div', {'data-qa': 'vacancy-serp__vacancy-address'}).text
+    
+    if salary_tag:
+        salary = salary_tag.text.strip()
+    else:
+        salary = 'Не указана'
+    if any(keyword.lower() in headers.lower() for keyword in keywords):
+        time.sleep(0.1)
+        parsed_data.append({
+            'link': link,
+            'header': headers,
+            'company-name': company_name,
+            'city': city,
+            'salary': salary
+            })
 
-    time.sleep(0.1)
-    parsed_data.append({
-        'link': link_relative,
-        'header': header,
-        'company-name': company_name
-    })
-
-print(parsed_data)
+pprint(parsed_data)
